@@ -2,8 +2,6 @@ package view;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -22,7 +20,7 @@ import broadcast.GameBroadcast;
  *
  */
 public class NewGameDialog extends JDialog {
-	
+
 	private static final long serialVersionUID = 1L;
 
 	private final static int PORT = 9000;
@@ -77,46 +75,43 @@ public class NewGameDialog extends JDialog {
 		getContentPane().add(buttonPane, BorderLayout.SOUTH);
 
 		JButton btnCancel = new JButton("Cancelar");
-		btnCancel.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				
-				GameBroadcast.getInstance().stopServer();
-				
-				dispose();
-			}
+		btnCancel.addActionListener(e -> {
+
+			GameBroadcast.getInstance().stopServer();
+
+			dispose();
 		});
 		btnCancel.setActionCommand("Cancel");
 		buttonPane.add(btnCancel);
-		
+
 		startConnection();
 	}
-	
-	private void startConnection(){
 
-		//Chama o GameBroadcast e pede para iniciar a conexao com o servidor
+	private void startConnection() {
+
+		// Chama o GameBroadcast e pede para iniciar a conexao com o servidor
 		GameBroadcast.getInstance().startServer(Integer.valueOf(textPort.getText()));
-		
-		
+
 		new Thread(() -> {
 
 			boolean connected = false;
-			//Enquanto nao estiver conectado, pergunte ao GameBroadcast qual o status da conexao.
-			while(!connected){
-				
+			// Enquanto nao estiver conectado, pergunte ao GameBroadcast qual o
+			// status da conexao.
+			while (!connected) {
+
 				connected = GameBroadcast.getInstance().getConnectionStatus().equals(ConnectionStatus.CONNECTED);
-				
+
 			}
 			dispose();
-			
+
 			try {
-				//Nao mata o processador
-				Thread.sleep(400);
+				// Nao mata o processador
+				Thread.sleep(500);
 			} catch (Exception e) {
 				System.out.println(e.getMessage());
 			}
-			
+
 		}).start();
-		
-		
+
 	}
 }

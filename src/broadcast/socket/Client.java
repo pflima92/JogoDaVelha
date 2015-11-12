@@ -10,7 +10,7 @@ import broadcast.GameBroadcast;
 
 /**
  * Client Socket
- * 
+ *
  * Utilizado para conexão com o Server
  *
  */
@@ -21,22 +21,27 @@ public class Client {
 	public static final String PLAY = "PLAY";
 	public static final String VALIDATE = "VALIDATE";
 
+	public static void main(String[] args) {
+		Client client = new Client("127.0.0.1", 9000);
+		client.sendMessage(Client.CONNECT);
+	}
+
 	private final String host;
 
 	private final int port;
 
 	// Declaro o socket cliente
 	private Socket socket = null;
-
 	private PrintStream printStream = null;
+
 	private BufferedReader entrada = null;
 
 	/**
 	 * @param host
 	 * @param port
-	 * 
+	 *
 	 *            Construtor que recebe o host e a porta para comunicação
-	 * 
+	 *
 	 */
 	public Client(String host, int port) {
 		this.host = host;
@@ -63,8 +68,9 @@ public class Client {
 			boolean wait = true;
 			while (wait) {
 				received = entrada.readLine();
-				if (received == null)
+				if (received == null) {
 					continue;
+				}
 
 				System.out.println("Client - Recebido:" + received);
 				GameBroadcast.getInstance().runCommand(received);
@@ -74,16 +80,12 @@ public class Client {
 		} catch (IOException e) {
 			return null;
 		} finally {
-			if (socket != null)
+			if (socket != null) {
 				try {
 					socket.close();
 				} catch (IOException e) {
 				}
+			}
 		}
-	}
-
-	public static void main(String[] args) {
-		Client client = new Client("127.0.0.1", 9000);
-		client.sendMessage(Client.CONNECT);
 	}
 }

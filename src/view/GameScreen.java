@@ -3,8 +3,6 @@ package view;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.SystemColor;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
@@ -47,6 +45,61 @@ public class GameScreen {
 		initialize();
 	}
 
+	private void buildBoard(Result result) {
+		for (int i = 0; i < GameBroadcast.getInstance().getGameManager().getBoard().length; i++) {
+			Condition condition = GameBroadcast.getInstance().getGameManager().getBoard()[i];
+			if (condition.equals(Condition.PLAYER_1)) {
+				buttons.get(i).setCondition(Condition.PLAYER_1);
+				buttons.get(i).setText(ICON_PLAYER_1);
+				buttons.get(i).setForeground(Color.RED);
+			} else if (condition.equals(Condition.PLAYER_2)) {
+				buttons.get(i).setCondition(Condition.PLAYER_2);
+				buttons.get(i).setText(ICON_PLAYER_2);
+				buttons.get(i).setForeground(Color.BLUE);
+			} else {
+				buttons.get(i).setText(ICON_EMPTY);
+			}
+		}
+
+		if (result.equals(Result.NEXT_PLAY)) {
+			lookup();
+		} else if (result.equals(Result.DRAW)) {
+
+			JOptionPane.showMessageDialog(getFrame(), "Deu velha...", "Acabou", JOptionPane.OK_OPTION);
+			cleanBoard();
+		} else if (result.equals(Result.WAIT)) {
+		} else {
+			String message = Condition.valueOf(result.name()).equals(GameBroadcast.getInstance().getMe())
+					? "Parabéns, você venceu!" : "Você perdeu, vitória do seu adversário!";
+			JOptionPane.showMessageDialog(getFrame(), message);
+			cleanBoard();
+		}
+	}
+
+	protected void cleanBoard() {
+
+		GameBroadcast.getInstance().reset();
+		
+		title.setText("");
+
+		// Reinicia todos os botãos
+		for (GameButton gameButton : buttons) {
+			gameButton.setCondition(Condition.EMPTY);
+			gameButton.setText(ICON_EMPTY);
+			gameButton.setEnabled(false);
+		}
+	}
+
+	protected void enableButtons() {
+		for (GameButton gameButton : buttons) {
+			gameButton.setEnabled(true);
+		}
+	}
+
+	public JFrame getFrame() {
+		return frmJogoDaVelha;
+	}
+
 	/**
 	 * Initialize the contents of the frame.
 	 */
@@ -66,62 +119,53 @@ public class GameScreen {
 		menuBar.add(mnArquivo);
 
 		JMenuItem menuNewGame = new JMenuItem("Novo Jogo (Online)");
-		menuNewGame.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+		menuNewGame.addActionListener(e -> {
 
-				frmJogoDaVelha.setEnabled(false);
+			frmJogoDaVelha.setEnabled(false);
 
-				NewGameDialog newGameDialog = new NewGameDialog();
-				newGameDialog.setAlwaysOnTop(true);
-				newGameDialog.setVisible(true);
-				newGameDialog.toFront();
-				newGameDialog.addWindowListener(new WindowAdapter() {
-					@Override
-					public void windowClosed(WindowEvent e) {
-						frmJogoDaVelha.setEnabled(true);
-						lookup();
-					}
-				});
-			}
+			NewGameDialog newGameDialog = new NewGameDialog();
+			newGameDialog.setAlwaysOnTop(true);
+			newGameDialog.setVisible(true);
+			newGameDialog.toFront();
+			newGameDialog.addWindowListener(new WindowAdapter() {
+				@Override
+				public void windowClosed(WindowEvent e) {
+					frmJogoDaVelha.setEnabled(true);
+					lookup();
+				}
+			});
 		});
 		menuNewGame.setBackground(SystemColor.menu);
 		mnArquivo.add(menuNewGame);
 
 		JMenuItem menuConnect = new JMenuItem("Conectar (Online)");
-		menuConnect.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+		menuConnect.addActionListener(e -> {
 
-				frmJogoDaVelha.setEnabled(false);
+			frmJogoDaVelha.setEnabled(false);
 
-				ConnectDialog connectDialog = new ConnectDialog();
-				connectDialog.setAlwaysOnTop(true);
-				connectDialog.setVisible(true);
-				connectDialog.toFront();
-				connectDialog.addWindowListener(new WindowAdapter() {
-					@Override
-					public void windowClosed(WindowEvent e) {
-						frmJogoDaVelha.setEnabled(true);
-						lookup();
-					}
-				});
+			ConnectDialog connectDialog = new ConnectDialog();
+			connectDialog.setAlwaysOnTop(true);
+			connectDialog.setVisible(true);
+			connectDialog.toFront();
+			connectDialog.addWindowListener(new WindowAdapter() {
+				@Override
+				public void windowClosed(WindowEvent e) {
+					frmJogoDaVelha.setEnabled(true);
+					lookup();
+				}
+			});
 
-			}
 		});
 		menuConnect.setBackground(SystemColor.menu);
 		mnArquivo.add(menuConnect);
 
 		JMenuItem menuSair = new JMenuItem("Sair");
-		menuSair.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				// TODO valida se existe conexao aberta e fecha...
-				System.exit(0);
-			}
-		});
+		menuSair.addActionListener(e -> System.exit(0));
 		menuSair.setBackground(SystemColor.menu);
 		mnArquivo.add(menuSair);
 		frmJogoDaVelha.getContentPane().setLayout(null);
 
-		title = new JLabel("Title");
+		title = new JLabel("");
 		title.setFont(new Font("Lucida Grande", Font.PLAIN, 16));
 		title.setBounds(6, 6, 394, 26);
 		frmJogoDaVelha.getContentPane().add(title);
@@ -134,91 +178,55 @@ public class GameScreen {
 		gamePanel.setLayout(null);
 
 		GameButton btn0 = new GameButton(0);
-		btn0.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				performPlay(btn0);
-			}
-		});
+		btn0.addActionListener(e -> performPlay(btn0));
 		btn0.setFont(new Font("Comic Sans MS", Font.PLAIN, 40));
 		btn0.setBounds(0, 0, 105, 105);
 		gamePanel.add(btn0);
 
 		GameButton btn1 = new GameButton(1);
-		btn1.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				performPlay(btn1);
-			}
-		});
+		btn1.addActionListener(e -> performPlay(btn1));
 		btn1.setFont(new Font("Comic Sans MS", Font.PLAIN, 40));
 		btn1.setBounds(105, 0, 105, 105);
 		gamePanel.add(btn1);
 
 		GameButton btn2 = new GameButton(2);
-		btn2.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				performPlay(btn2);
-			}
-		});
+		btn2.addActionListener(e -> performPlay(btn2));
 		btn2.setFont(new Font("Comic Sans MS", Font.PLAIN, 40));
 		btn2.setBounds(210, 0, 105, 105);
 		gamePanel.add(btn2);
 
 		GameButton btn3 = new GameButton(3);
-		btn3.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				performPlay(btn3);
-			}
-		});
+		btn3.addActionListener(e -> performPlay(btn3));
 		btn3.setFont(new Font("Comic Sans MS", Font.PLAIN, 40));
 		btn3.setBounds(0, 105, 105, 105);
 		gamePanel.add(btn3);
 
 		GameButton btn4 = new GameButton(4);
-		btn4.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				performPlay(btn4);
-			}
-		});
+		btn4.addActionListener(e -> performPlay(btn4));
 		btn4.setFont(new Font("Comic Sans MS", Font.PLAIN, 40));
 		btn4.setBounds(105, 105, 105, 105);
 		gamePanel.add(btn4);
 
 		GameButton btn5 = new GameButton(5);
-		btn5.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				performPlay(btn5);
-			}
-		});
+		btn5.addActionListener(e -> performPlay(btn5));
 		btn5.setFont(new Font("Comic Sans MS", Font.PLAIN, 40));
 		btn5.setBounds(210, 105, 105, 105);
 		gamePanel.add(btn5);
 
 		GameButton btn6 = new GameButton(6);
-		btn6.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				performPlay(btn6);
-			}
-		});
+		btn6.addActionListener(e -> performPlay(btn6));
 		btn6.setFont(new Font("Comic Sans MS", Font.PLAIN, 40));
 		btn6.setBounds(0, 210, 105, 105);
 		gamePanel.add(btn6);
 
 		GameButton btn7 = new GameButton(7);
-		btn7.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				performPlay(btn7);
-			}
-		});
+		btn7.addActionListener(e -> performPlay(btn7));
 		btn7.setFont(new Font("Comic Sans MS", Font.PLAIN, 40));
 		btn7.setBounds(105, 210, 105, 105);
 		gamePanel.add(btn7);
 
 		GameButton btn8 = new GameButton(8);
-		btn8.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				performPlay(btn8);
-			}
-		});
+		btn8.addActionListener(e -> performPlay(btn8));
 		btn8.setFont(new Font("Comic Sans MS", Font.PLAIN, 40));
 		btn8.setBounds(210, 210, 105, 105);
 		gamePanel.add(btn8);
@@ -229,18 +237,30 @@ public class GameScreen {
 		cleanBoard();
 	}
 
-	protected void cleanBoard() {
-		// Reinicia todos os botãos
-		for (GameButton gameButton : buttons) {
-			gameButton.setCondition(Condition.EMPTY);
-			gameButton.setText(ICON_EMPTY);
-			gameButton.setEnabled(false);
-		}
-	}
+	private void lookup() {
+		enableButtons();
 
-	protected void enableButtons() {
-		for (GameButton gameButton : buttons) {
-			gameButton.setEnabled(true);
+		if (GameBroadcast.getInstance().isMe()) {
+			title.setText("Sua vez de jogar!");
+		} else {
+			title.setText("Aguarde seu adversário!");
+
+			new Thread(() -> {
+
+				// Enquanto a ação é esperar pergunte para o server
+				while (!GameBroadcast.getInstance().isMe()) {
+					// Não matar o servidor
+					try {
+						Thread.sleep(500);
+
+						if (GameBroadcast.getInstance().already()) {
+							buildBoard(GameBroadcast.getInstance().getGameManager().validateGameBoard());
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}).start();
 		}
 	}
 
@@ -258,75 +278,8 @@ public class GameScreen {
 					JOptionPane.WARNING_MESSAGE);
 			return;
 		}
-				
+
 		Result result = GameBroadcast.getInstance().play(gameButton.getPosition());
 		buildBoard(result);
-		
-	}
-
-	private void lookup() {
-		enableButtons();
-
-		if (GameBroadcast.getInstance().isMe()) {
-			title.setText("Sua vez de jogar!");
-		} else {
-			title.setText("Aguarde seu adversário!");
-
-			new Thread(() -> {
-
-				// Enquanto a ação é esperar pergunte para o server
-				while (!GameBroadcast.getInstance().isMe()) {
-					// Não matar o servidor
-					try {
-						Thread.sleep(200);
-						
-						if(GameBroadcast.getInstance().already()){
-							buildBoard(Result.WAIT);
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-				
-				lookup();
-				
-			}).start();
-		}
-	}
-	
-	private void buildBoard(Result result){
-		for (int i = 0; i < GameBroadcast.getInstance().getGameManager().getBoard().length; i++) {
-			Condition condition = GameBroadcast.getInstance().getGameManager().getBoard()[i];
-			if(condition.equals(Condition.PLAYER_1)){
-				buttons.get(i).setText(ICON_PLAYER_1);
-				buttons.get(i).setForeground(Color.RED);
-			}else if(condition.equals(Condition.PLAYER_2)){
-				buttons.get(i).setText(ICON_PLAYER_2);
-				buttons.get(i).setForeground(Color.BLUE);
-			}else{
-				buttons.get(i).setText(ICON_EMPTY);
-			}
-		}
-		
-		if(result.equals(Result.NEXT_PLAY)){
-			lookup();
-		}else if (result.equals(Result.DRAW)) {
-			
-			JOptionPane.showMessageDialog(getFrame(), "Deu velha...", "Acabou", JOptionPane.OK_OPTION);
-		}else if (result.equals(Result.WAIT)) {
-		}
-		else {
-			
-			JOptionPane.showMessageDialog(getFrame(), "Vitória do jogador: " + result);
-			cleanBoard();
-		}
-	}
-
-	public JFrame getFrame() {
-		return frmJogoDaVelha;
-	}
-
-	public void setFrame(JFrame frame) {
-		this.frmJogoDaVelha = frame;
 	}
 }

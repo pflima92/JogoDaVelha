@@ -2,8 +2,6 @@ package view;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -17,7 +15,7 @@ import javax.swing.border.EmptyBorder;
 import broadcast.GameBroadcast;
 
 public class ConnectDialog extends JDialog {
-	
+
 	private static final long serialVersionUID = 1L;
 
 	private final static int PORT = 9000;
@@ -70,27 +68,16 @@ public class ConnectDialog extends JDialog {
 		getContentPane().add(buttonPane, BorderLayout.SOUTH);
 
 		JButton btnCancel = new JButton("Cancelar");
-		btnCancel.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				
-				dispose();
-			}
-		});
-		
+		btnCancel.addActionListener(e -> dispose());
+
 		JButton btnConectar = new JButton("Conectar");
-		btnConectar.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				
-				startConnection();
-				
-			}
-		});
+		btnConectar.addActionListener(e -> startConnection());
 		buttonPane.add(btnConectar);
 		btnCancel.setActionCommand("Cancel");
 		buttonPane.add(btnCancel);
 	}
-	
-	private void startConnection(){
+
+	private void startConnection() {
 		GameBroadcast.getInstance().connectClient(textAddress.getText(), Integer.valueOf(textPort.getText()));
 		dispose();
 	}

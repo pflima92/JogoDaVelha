@@ -21,6 +21,8 @@ public class Server {
 
 	// Declaro a Stream de saida de dados
 	private PrintStream printStream = null;
+	
+	private Thread serverThread;
 
 	public Server(int port) {
 		this.port = port;
@@ -28,14 +30,14 @@ public class Server {
 
 	/**
 	 * Método que inicia a escuta do servidor
-	 * 
+	 *
 	 * Enquanto o servidor estiver ligado ele ira ficar esperando receber um
 	 * comando, quando receber ele pega, executa e depois devolve a resposta.
-	 * 
+	 *
 	 */
 	public void listen() {
 
-		new Thread(() -> {
+		serverThread = new Thread(() -> {
 
 			// Declaro o leitor para a entrada de dados
 			BufferedReader entrada = null;
@@ -45,8 +47,7 @@ public class Server {
 				// Cria o ServerSocket na porta se estiver disponível
 				serverSocket = new ServerSocket(port);
 
-				boolean opened = true;
-				while (opened) {
+				while (true) {
 
 					// Aguarda uma conexão na porta especificada e cria retorna
 					// o
@@ -81,22 +82,26 @@ public class Server {
 				stop();
 			}
 
-		}).start();
+		});
+		serverThread.start();
 	}
 
 	/**
 	 * Método que para o Server
 	 */
 	public void stop() {
+		
 		try {
 			// Encerro o socket de comunicação
-			if (socket != null)
+			if (socket != null) {
 				socket.close();
+			}
 			// Encerro o ServerSocket
-			serverSocket.close();
+			if(serverSocket != null)
+				serverSocket.close();
 		} catch (IOException e) {
 
 		}
-
+		serverThread.interrupt();
 	}
 }
