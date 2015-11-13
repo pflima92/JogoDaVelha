@@ -21,20 +21,17 @@ public class Client {
 	public static final String PLAY = "PLAY";
 	public static final String VALIDATE = "VALIDATE";
 
-	public static void main(String[] args) {
-		Client client = new Client("127.0.0.1", 9000);
-		client.sendMessage(Client.CONNECT);
-	}
-
+	/**
+	 * Define o Host
+	 */
 	private final String host;
 
+	/**
+	 * Define a porta
+	 */
 	private final int port;
 
-	// Declaro o socket cliente
 	private Socket socket = null;
-	private PrintStream printStream = null;
-
-	private BufferedReader entrada = null;
 
 	/**
 	 * @param host
@@ -49,6 +46,12 @@ public class Client {
 	}
 
 	public String sendMessage(String message) {
+		
+		System.out.println(String.format("Client - Envio: %s", message));
+		
+		PrintStream printStream = null;
+
+		BufferedReader entrada = null;
 
 		try {
 			// Cria o socket com o recurso desejado na porta especificada

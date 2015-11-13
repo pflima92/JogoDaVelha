@@ -2,12 +2,14 @@ package view;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
@@ -78,7 +80,11 @@ public class ConnectDialog extends JDialog {
 	}
 
 	private void startConnection() {
-		GameBroadcast.getInstance().connectClient(textAddress.getText(), Integer.valueOf(textPort.getText()));
-		dispose();
+		try {
+			GameBroadcast.getInstance().connectClient(textAddress.getText(), Integer.valueOf(textPort.getText()));
+			dispose();
+		} catch (ConnectException e) {
+			JOptionPane.showMessageDialog(null, "Conexão inválida ou indisponível.","Erro", JOptionPane.WARNING_MESSAGE);
+		}
 	}
 }

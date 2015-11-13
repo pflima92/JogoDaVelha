@@ -9,8 +9,15 @@ import java.net.Socket;
 
 import broadcast.GameBroadcast;
 
+/**
+ * A classe Server é responsável pela comunicação do Sistema, como Servidor
+ * utilizando Sockets.
+ */
 public class Server {
 
+	/**
+	 * Indica a porta que o ServerSocket abrira de comunicação.
+	 */
 	private int port;
 
 	/** Declaro o ServerSocket */
@@ -19,11 +26,18 @@ public class Server {
 	/** Declaro o Socket de comunicação */
 	private Socket socket = null;
 
-	// Declaro a Stream de saida de dados
-	private PrintStream printStream = null;
-	
+	/**
+	 * Definição da Thread responsável pela escuta do Server, utilizado para que
+	 * a aplicação não sejá afetada ao realizar a escuta do ServerSocket.
+	 */
 	private Thread serverThread;
 
+	/**
+	 * 
+	 * Construtor que recebe a porta do Server
+	 * 
+	 * @param port
+	 */
 	public Server(int port) {
 		this.port = port;
 	}
@@ -41,6 +55,9 @@ public class Server {
 
 			// Declaro o leitor para a entrada de dados
 			BufferedReader entrada = null;
+
+			// Declaro a Stream de saida de dados
+			PrintStream printStream = null;
 
 			try {
 
@@ -65,13 +82,15 @@ public class Server {
 					// recebe
 					String received = entrada.readLine();
 
-					System.out.println("Comando recebido: " + received);
+					System.out.println(String.format("Server - Recebido: %s", received));
 
 					printStream = new PrintStream(socket.getOutputStream());
 
 					// Chama o GameBroadcast que devolve para o client o que o
 					// client precisa fazer
 					String result = GameBroadcast.getInstance().runCommand(received);
+
+					System.out.println(String.format("Server - Enviar: %s", result));
 
 					printStream.println(result);
 				}
@@ -90,14 +109,14 @@ public class Server {
 	 * Método que para o Server
 	 */
 	public void stop() {
-		
+
 		try {
 			// Encerro o socket de comunicação
 			if (socket != null) {
 				socket.close();
 			}
 			// Encerro o ServerSocket
-			if(serverSocket != null)
+			if (serverSocket != null)
 				serverSocket.close();
 		} catch (IOException e) {
 

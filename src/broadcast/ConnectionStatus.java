@@ -5,5 +5,5 @@ package broadcast;
  *
  */
 public enum ConnectionStatus {
-	WAIT_CONNECTION, CONNECTED, LOSTED;
+	WAIT_CONNECTION, CONNECTED, STOPED;
 }

@@ -1,5 +1,8 @@
 package game;
 
+/**
+ * Define condição atual do Jogo
+ */
 public enum Condition {
 
 	EMPTY(0), PLAYER_1(1), PLAYER_2(2);
@@ -13,17 +16,4 @@ public enum Condition {
 	public int getValue() {
 		return value;
 	}
-
-	// public Condition getCondition(int value){
-	// if(EMPTY.getValue() == value){
-	// return EMPTY;
-	// }
-	// if(PLAYER_1.getValue() == value){
-	// return EMPTY;
-	// }
-	// if(PLAYER_2.getValue() == value){
-	// return EMPTY;
-	// }
-	// return null;
-	// }
 }

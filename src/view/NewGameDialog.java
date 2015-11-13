@@ -92,7 +92,7 @@ public class NewGameDialog extends JDialog {
 		// Chama o GameBroadcast e pede para iniciar a conexao com o servidor
 		GameBroadcast.getInstance().startServer(Integer.valueOf(textPort.getText()));
 
-		new Thread(() -> {
+		Thread waitConnectionThread = new Thread(() -> {
 
 			boolean connected = false;
 			// Enquanto nao estiver conectado, pergunte ao GameBroadcast qual o
@@ -101,17 +101,15 @@ public class NewGameDialog extends JDialog {
 
 				connected = GameBroadcast.getInstance().getConnectionStatus().equals(ConnectionStatus.CONNECTED);
 
+				try {
+					// Nao mata o processador
+					Thread.sleep(100);
+				} catch (Exception e) {
+					System.out.println(e.getMessage());
+				}
 			}
 			dispose();
-
-			try {
-				// Nao mata o processador
-				Thread.sleep(500);
-			} catch (Exception e) {
-				System.out.println(e.getMessage());
-			}
-
-		}).start();
-
+		});
+		waitConnectionThread.start();
 	}
 }

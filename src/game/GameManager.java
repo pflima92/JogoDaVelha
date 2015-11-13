@@ -2,6 +2,15 @@ package game;
 
 import java.util.Arrays;
 
+/**
+ * A classe GameManager é a responsável pela manipulação dos dados do Jogo.
+ * 
+ * Ou sejá, toda manipulação do tabuleiro, jogador atual, entre outras
+ * caracteristacas, são realizadas nesta classe. Isso possibilita que
+ * independente do protocolo de comunicação utilizado, a mecânica do jogo, não
+ * sejá alterada.
+ *
+ */
 public class GameManager {
 
 	/**
@@ -17,6 +26,9 @@ public class GameManager {
 	 */
 	private Condition[] board = new Condition[SIZE];
 
+	/**
+	 * Todas as combinações de vitória
+	 */
 	private int[][] winCombination = new int[][] { { 0, 1, 2 }, { 3, 4, 5 }, { 6, 7, 8 }, // Vitória
 																							// em
 																							// linha
@@ -35,6 +47,9 @@ public class GameManager {
 		cleanBoard();
 	}
 
+	/**
+	 * Altera a jogada de PLAYER.
+	 */
 	public void changePlay() {
 		if (currentPlay.equals(Condition.PLAYER_1)) {
 			currentPlay = Condition.PLAYER_2;
@@ -52,28 +67,31 @@ public class GameManager {
 		}
 	}
 
+	/**
+	 * Recupera o tabuleiro em seu estado atual.
+	 */
 	public Condition[] getBoard() {
 		return board;
 	}
 
+	/**
+	 * Recupera quem é o Jogador atual.
+	 */
 	public Condition getCurrentPlay() {
 		return currentPlay;
 	}
 
+	/**
+	 * Aplica uma jogado ao tabuleiro. 
+	 */
 	public void play(int position) {
 		board[position] = getCurrentPlay();
 	}
 
-	protected void printBoard() {
-		for (int i = 0; i < SIZE; i++) {
-			System.out.println(String.valueOf(i) + "=" + board[i]);
-		}
-	}
-
-	public void setCurrentPlay(Condition currentPlay) {
-		this.currentPlay = currentPlay;
-	}
-
+	/**
+	 * Valida e retorna o resultado final no momento da validação do tabuleiro,
+	 * a utilização deste método possibilita que o estado atual do jogo sejá recuperado.
+	 */
 	public Result validateGameBoard() {
 		// Verifica se houve vencedor
 		for (int i = 0; i <= 7; i++) {

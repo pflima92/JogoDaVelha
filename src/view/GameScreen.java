@@ -18,6 +18,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
 
+import broadcast.ConnectionStatus;
 import broadcast.GameBroadcast;
 import game.Condition;
 import game.Result;
@@ -30,85 +31,48 @@ public class GameScreen {
 	/** Lista com todos os botãos, utilizado para controle em tela. */
 	private List<GameButton> buttons = new ArrayList<>();
 
+	/**
+	 * Texto se Vazio
+	 */
 	private final String ICON_EMPTY = "";
 
+	/**
+	 * Texto para o Player 1
+	 */
 	private final String ICON_PLAYER_1 = "X";
 
+	/**
+	 * Texto para o Player 2
+	 */
 	private final String ICON_PLAYER_2 = "O";
 
+	/**
+	 * Label que controla o status do jogo.
+	 */
 	private JLabel title;
 
 	/**
-	 * Create the application.
+	 * Declaração da Thread que verifica se a rodada já está disponível para ser
+	 * jogada.
 	 */
-	public GameScreen() {
-		initialize();
-	}
-
-	private void buildBoard(Result result) {
-		for (int i = 0; i < GameBroadcast.getInstance().getGameManager().getBoard().length; i++) {
-			Condition condition = GameBroadcast.getInstance().getGameManager().getBoard()[i];
-			if (condition.equals(Condition.PLAYER_1)) {
-				buttons.get(i).setCondition(Condition.PLAYER_1);
-				buttons.get(i).setText(ICON_PLAYER_1);
-				buttons.get(i).setForeground(Color.RED);
-			} else if (condition.equals(Condition.PLAYER_2)) {
-				buttons.get(i).setCondition(Condition.PLAYER_2);
-				buttons.get(i).setText(ICON_PLAYER_2);
-				buttons.get(i).setForeground(Color.BLUE);
-			} else {
-				buttons.get(i).setText(ICON_EMPTY);
-			}
-		}
-
-		if (result.equals(Result.NEXT_PLAY)) {
-			lookup();
-		} else if (result.equals(Result.DRAW)) {
-
-			JOptionPane.showMessageDialog(getFrame(), "Deu velha...", "Acabou", JOptionPane.OK_OPTION);
-			cleanBoard();
-		} else if (result.equals(Result.WAIT)) {
-		} else {
-			String message = Condition.valueOf(result.name()).equals(GameBroadcast.getInstance().getMe())
-					? "Parabéns, você venceu!" : "Você perdeu, vitória do seu adversário!";
-			JOptionPane.showMessageDialog(getFrame(), message);
-			cleanBoard();
-		}
-	}
-
-	protected void cleanBoard() {
-
-		GameBroadcast.getInstance().reset();
-		
-		title.setText("");
-
-		// Reinicia todos os botãos
-		for (GameButton gameButton : buttons) {
-			gameButton.setCondition(Condition.EMPTY);
-			gameButton.setText(ICON_EMPTY);
-			gameButton.setEnabled(false);
-		}
-	}
-
-	protected void enableButtons() {
-		for (GameButton gameButton : buttons) {
-			gameButton.setEnabled(true);
-		}
-	}
-
-	public JFrame getFrame() {
-		return frmJogoDaVelha;
-	}
+	private Thread alreadyPlayThread;
 
 	/**
-	 * Initialize the contents of the frame.
+	 * Cria a tela principal do Jogo
 	 */
-	private void initialize() {
+	public GameScreen() {
+
+		// Cria Frame Principal do Jogo e seta seus atributos
 		frmJogoDaVelha = new JFrame();
 		frmJogoDaVelha.setResizable(false);
 		frmJogoDaVelha.setTitle("Jogo da Velha");
 		frmJogoDaVelha.setBounds(100, 100, 406, 456);
 		frmJogoDaVelha.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+		title = new JLabel("");
+		title.setFont(new Font("Lucida Grande", Font.PLAIN, 16));
+		title.setBounds(6, 6, 394, 26);
+		frmJogoDaVelha.getContentPane().add(title);
 
 		JMenuBar menuBar = new JMenuBar();
 		menuBar.setBackground(SystemColor.scrollbar);
@@ -119,6 +83,9 @@ public class GameScreen {
 		menuBar.add(mnArquivo);
 
 		JMenuItem menuNewGame = new JMenuItem("Novo Jogo (Online)");
+		menuNewGame.setBackground(SystemColor.menu);
+
+		// Ao clicar em novo jogo, abre Dialog como ação para criar o server.
 		menuNewGame.addActionListener(e -> {
 
 			frmJogoDaVelha.setEnabled(false);
@@ -131,14 +98,17 @@ public class GameScreen {
 				@Override
 				public void windowClosed(WindowEvent e) {
 					frmJogoDaVelha.setEnabled(true);
-					lookup();
+					if (!GameBroadcast.getInstance().getConnectionStatus().equals(ConnectionStatus.STOPED)) {
+						// Ao encerrar o frame principal é chamado novamente e o
+						// métódo lookup é chamado para iniciar o jogo.
+						lookup();
+					}
 				}
 			});
 		});
-		menuNewGame.setBackground(SystemColor.menu);
-		mnArquivo.add(menuNewGame);
 
 		JMenuItem menuConnect = new JMenuItem("Conectar (Online)");
+		menuConnect.setBackground(SystemColor.menu);
 		menuConnect.addActionListener(e -> {
 
 			frmJogoDaVelha.setEnabled(false);
@@ -151,24 +121,25 @@ public class GameScreen {
 				@Override
 				public void windowClosed(WindowEvent e) {
 					frmJogoDaVelha.setEnabled(true);
-					lookup();
+					if (!GameBroadcast.getInstance().getConnectionStatus().equals(ConnectionStatus.STOPED)) {
+						lookup();
+					}
 				}
 			});
 
 		});
-		menuConnect.setBackground(SystemColor.menu);
-		mnArquivo.add(menuConnect);
 
 		JMenuItem menuSair = new JMenuItem("Sair");
 		menuSair.addActionListener(e -> System.exit(0));
 		menuSair.setBackground(SystemColor.menu);
-		mnArquivo.add(menuSair);
-		frmJogoDaVelha.getContentPane().setLayout(null);
 
-		title = new JLabel("");
-		title.setFont(new Font("Lucida Grande", Font.PLAIN, 16));
-		title.setBounds(6, 6, 394, 26);
-		frmJogoDaVelha.getContentPane().add(title);
+		// Adiciona ao Menu Arquivo os itens
+		mnArquivo.add(menuNewGame);
+		mnArquivo.add(menuConnect);
+		mnArquivo.add(menuSair);
+
+		// Seta o layout padrão nulo
+		frmJogoDaVelha.getContentPane().setLayout(null);
 
 		JPanel gamePanel = new JPanel();
 		gamePanel.setBackground(new Color(255, 255, 255));
@@ -234,9 +205,113 @@ public class GameScreen {
 		// Adiciona todos os botãos a lista de controle de botãos
 		buttons.addAll(Arrays.asList(btn0, btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8));
 
+		// Limpa e libera a tela para as ações do usuário.
 		cleanBoard();
 	}
 
+	/**
+	 * 
+	 * Método responsável por construir o tabuleiro do Jogo
+	 * 
+	 * Recebe o @param result como resultado da validação, que é informado pelo
+	 * Game Manager para tomada de decisão
+	 * 
+	 */
+	private void buildBoard(Result result) {
+
+		// Varre todos os botãos e seta cada um condizente a sua condicão atual.
+		for (int i = 0; i < GameBroadcast.getInstance().getGameManager().getBoard().length; i++) {
+			Condition condition = GameBroadcast.getInstance().getGameManager().getBoard()[i];
+			if (condition.equals(Condition.PLAYER_1)) {
+				buttons.get(i).setCondition(Condition.PLAYER_1);
+				buttons.get(i).setText(ICON_PLAYER_1);
+				buttons.get(i).setForeground(Color.RED);
+			} else if (condition.equals(Condition.PLAYER_2)) {
+				buttons.get(i).setCondition(Condition.PLAYER_2);
+				buttons.get(i).setText(ICON_PLAYER_2);
+				buttons.get(i).setForeground(Color.BLUE);
+			} else {
+				buttons.get(i).setText(ICON_EMPTY);
+			}
+		}
+
+		if (result.equals(Result.WAIT)) {
+			// No caso de espera, não faz nada
+		} else if (result.equals(Result.NEXT_PLAY)) {
+			// Se o result for NEXT_PLAY encaminha próxima jogada com o méotodo
+			// lookup();
+
+			lookup();
+		} else if (result.equals(Result.DRAW)) {
+			// No caso de empate, imprime mensagem e chama método para liberar o
+			// tabuleiro.
+
+			JOptionPane.showMessageDialog(getFrame(), "Deu velha...", "Acabou", JOptionPane.OK_OPTION);
+			cleanBoard();
+		} else {
+			// Os outros dois estados possíveis são vitória do PLAYER1 ou
+			// PLAYER2, é realizado o tratamento e amostragem da mensagem
+			// apropriada.
+
+			String message = Condition.valueOf(result.name()).equals(GameBroadcast.getInstance().getMe())
+					? "Parabéns, você venceu!" : "Que pena, você perdeu!";
+			JOptionPane.showMessageDialog(getFrame(), message);
+
+			// Chama método para liberar o tabuleiro
+			cleanBoard();
+		}
+	}
+
+	/**
+	 * Libera o tabuleiro
+	 */
+	protected void cleanBoard() {
+
+		// Verifica se a Thread que fazia a validação ainda não foi encerrada e
+		// encerra
+		if (alreadyPlayThread != null && alreadyPlayThread.isAlive())
+			alreadyPlayThread.interrupt();
+
+		// Reinicia o GameBroadcast e o GameManager
+		GameBroadcast.getInstance().reset();
+
+		// Limpa a status da label
+		title.setText("");
+
+		// Reinicia todos os botãos
+		for (GameButton gameButton : buttons) {
+			gameButton.setCondition(Condition.EMPTY);
+			gameButton.setText(ICON_EMPTY);
+			gameButton.setEnabled(false);
+		}
+	}
+
+	/**
+	 * Habilita todos os botões
+	 */
+	protected void enableButtons() {
+		for (GameButton gameButton : buttons) {
+			gameButton.setEnabled(true);
+		}
+	}
+
+	/**
+	 * Retorna o frame principal
+	 */
+	public JFrame getFrame() {
+		return frmJogoDaVelha;
+	}
+
+	/**
+	 * Verifica com o GameBroadcast de quem é a vez da jogada.
+	 * 
+	 * Em caso de ser sua jogada, libera para jogar.
+	 * 
+	 * Em caso de não ser sua jogada, abre Thread que conversa com o
+	 * GameBroadcast perguntando se agora já é seu turno Quando for turno,
+	 * valida a resposta do adversário e aplica o método BuildBoard.
+	 * 
+	 */
 	private void lookup() {
 		enableButtons();
 
@@ -245,14 +320,21 @@ public class GameScreen {
 		} else {
 			title.setText("Aguarde seu adversário!");
 
-			new Thread(() -> {
+			// Inicia Thread para validação se é minha vez, criar uma Thread
+			// nesse momento impede que a aplicação
+			// fique travada enquanto espera a ação do adversário
+			alreadyPlayThread = new Thread(() -> {
 
-				// Enquanto a ação é esperar pergunte para o server
-				while (!GameBroadcast.getInstance().isMe()) {
+				// Enquanto a ação é esperar pergunte para o server se é a vez
+				while (!GameBroadcast.getInstance().getConnectionStatus().equals(ConnectionStatus.STOPED)
+						&& !GameBroadcast.getInstance().isMe()) {
+
 					// Não matar o servidor
 					try {
-						Thread.sleep(500);
+						Thread.sleep(100);
 
+						// Pergunta para o GameBroadcast se já está disponível
+						// para aplicar as ações de tela
 						if (GameBroadcast.getInstance().already()) {
 							buildBoard(GameBroadcast.getInstance().getGameManager().validateGameBoard());
 						}
@@ -260,10 +342,19 @@ public class GameScreen {
 						e.printStackTrace();
 					}
 				}
-			}).start();
+				alreadyPlayThread.interrupt();
+			});
+			alreadyPlayThread.start();
 		}
 	}
 
+	/**
+	 * 
+	 * Através do performPlay um botão executa sua jogada.
+	 * 
+	 * Todas as ações dos botãos precisam passar por aqui.
+	 * 
+	 */
 	private void performPlay(GameButton gameButton) {
 
 		// Verifica se o campo atual está livre
@@ -279,6 +370,9 @@ public class GameScreen {
 			return;
 		}
 
+		// Realiza a jogada e recupera qual o resultado dessa jogada e passa
+		// para o construtor do tabuleiro montar novamente com os valores da
+		// jogada atualizados
 		Result result = GameBroadcast.getInstance().play(gameButton.getPosition());
 		buildBoard(result);
 	}
