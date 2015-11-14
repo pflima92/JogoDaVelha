@@ -62,9 +62,6 @@ public class ConnectDialog extends JDialog {
 		} catch (UnknownHostException e) {
 			textAddress.setText("127.0.0.1");
 		}
-		JLabel lblAguardandoConexo = new JLabel("Aguardando conexão...");
-		lblAguardandoConexo.setBounds(6, 107, 341, 16);
-		contentPanel.add(lblAguardandoConexo);
 		JPanel buttonPane = new JPanel();
 		buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
 		getContentPane().add(buttonPane, BorderLayout.SOUTH);
