@@ -49,7 +49,12 @@ public class GameScreen {
 	/**
 	 * Label que controla o status do jogo.
 	 */
-	private JLabel title;
+	private JLabel labelTitle;
+	
+	/**
+	 * Label que controla o status do jogo.
+	 */
+	private JLabel labelConnectedWith;
 
 	/**
 	 * Declaração da Thread que verifica se a rodada já está disponível para ser
@@ -69,10 +74,10 @@ public class GameScreen {
 		frmJogoDaVelha.setBounds(100, 100, 406, 456);
 		frmJogoDaVelha.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-		title = new JLabel("");
-		title.setFont(new Font("Lucida Grande", Font.PLAIN, 16));
-		title.setBounds(6, 6, 394, 26);
-		frmJogoDaVelha.getContentPane().add(title);
+		labelTitle = new JLabel("");
+		labelTitle.setFont(new Font("Lucida Grande", Font.PLAIN, 16));
+		labelTitle.setBounds(6, 6, 394, 26);
+		frmJogoDaVelha.getContentPane().add(labelTitle);
 
 		JMenuBar menuBar = new JMenuBar();
 		menuBar.setBackground(SystemColor.scrollbar);
@@ -87,6 +92,11 @@ public class GameScreen {
 
 		// Ao clicar em novo jogo, abre Dialog como ação para criar o server.
 		menuNewGame.addActionListener(e -> {
+			
+			if (!GameBroadcast.getInstance().getConnectionStatus().equals(ConnectionStatus.STOPED)){
+				JOptionPane.showMessageDialog(null, "Existe uma conexão aberta, encerre o jogo para iniciar novo jogo.", "Atenção", JOptionPane.WARNING_MESSAGE);
+				return;
+			}
 
 			frmJogoDaVelha.setEnabled(false);
 
@@ -101,6 +111,7 @@ public class GameScreen {
 					if (!GameBroadcast.getInstance().getConnectionStatus().equals(ConnectionStatus.STOPED)) {
 						// Ao encerrar o frame principal é chamado novamente e o
 						// métódo lookup é chamado para iniciar o jogo.
+						labelConnectedWith.setText("Conectado como: Servidor");
 						lookup();
 					}
 				}
@@ -110,6 +121,11 @@ public class GameScreen {
 		JMenuItem menuConnect = new JMenuItem("Conectar (Online)");
 		menuConnect.setBackground(SystemColor.menu);
 		menuConnect.addActionListener(e -> {
+			
+			if (!GameBroadcast.getInstance().getConnectionStatus().equals(ConnectionStatus.STOPED)){
+				JOptionPane.showMessageDialog(null, "Existe uma conexão aberta, encerre o jogo para iniciar novo jogo.", "Atenção", JOptionPane.WARNING_MESSAGE);
+				return;
+			}
 
 			frmJogoDaVelha.setEnabled(false);
 
@@ -122,6 +138,8 @@ public class GameScreen {
 				public void windowClosed(WindowEvent e) {
 					frmJogoDaVelha.setEnabled(true);
 					if (!GameBroadcast.getInstance().getConnectionStatus().equals(ConnectionStatus.STOPED)) {
+						
+						labelConnectedWith.setText("Conectado como: Cliente");
 						lookup();
 					}
 				}
@@ -204,6 +222,10 @@ public class GameScreen {
 
 		// Adiciona todos os botãos a lista de controle de botãos
 		buttons.addAll(Arrays.asList(btn0, btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8));
+		
+		labelConnectedWith = new JLabel();
+		labelConnectedWith.setBounds(6, 371, 394, 16);
+		frmJogoDaVelha.getContentPane().add(labelConnectedWith);
 
 		// Limpa e libera a tela para as ações do usuário.
 		cleanBoard();
@@ -278,7 +300,8 @@ public class GameScreen {
 		GameBroadcast.getInstance().reset();
 
 		// Limpa a status da label
-		title.setText("");
+		labelTitle.setText("");
+		labelConnectedWith.setText("");
 
 		// Reinicia todos os botãos
 		for (GameButton gameButton : buttons) {
@@ -318,9 +341,9 @@ public class GameScreen {
 		enableButtons();
 
 		if (GameBroadcast.getInstance().isMe()) {
-			title.setText("Sua vez de jogar!");
+			labelTitle.setText("Sua vez de jogar!");
 		} else {
-			title.setText("Aguarde seu adversário!");
+			labelTitle.setText("Aguarde seu adversário!");
 			
 			System.out.println("Aguardando adversário...");
 
