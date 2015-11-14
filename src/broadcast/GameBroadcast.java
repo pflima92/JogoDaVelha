@@ -1,5 +1,6 @@
 package broadcast;
 
+import java.io.IOException;
 import java.net.ConnectException;
 
 import broadcast.socket.Client;
@@ -95,7 +96,7 @@ public class GameBroadcast {
 				return false;
 			}
 		}
-		return true;
+		return isMe();
 	}
 
 	/**
@@ -208,8 +209,10 @@ public class GameBroadcast {
 	 * Inicia o Server
 	 * 
 	 * @param port
+	 * @throws IOException 
+	 * @throws ConnectException 
 	 */
-	public void startServer(int port) {
+	public void startServer(int port) throws IOException {
 		me = Condition.PLAYER_1;
 		connectionStatus = ConnectionStatus.WAIT_CONNECTION;
 

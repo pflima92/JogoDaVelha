@@ -2,12 +2,14 @@ package view;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
@@ -90,7 +92,14 @@ public class NewGameDialog extends JDialog {
 	private void startConnection() {
 
 		// Chama o GameBroadcast e pede para iniciar a conexao com o servidor
-		GameBroadcast.getInstance().startServer(Integer.valueOf(textPort.getText()));
+		try {
+			GameBroadcast.getInstance().startServer(Integer.valueOf(textPort.getText()));
+		} catch (IOException e1) {
+			
+			JOptionPane.showMessageDialog(null, "Conexão indisponível.", "Erro", JOptionPane.ERROR_MESSAGE);
+			
+			return;
+		}
 
 		Thread waitConnectionThread = new Thread(() -> {
 

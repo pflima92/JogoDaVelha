@@ -219,6 +219,8 @@ public class GameScreen {
 	 */
 	private void buildBoard(Result result) {
 
+		System.out.println("Construindo tela ==> " + result);
+
 		// Varre todos os botãos e seta cada um condizente a sua condicão atual.
 		for (int i = 0; i < GameBroadcast.getInstance().getGameManager().getBoard().length; i++) {
 			Condition condition = GameBroadcast.getInstance().getGameManager().getBoard()[i];
@@ -319,6 +321,8 @@ public class GameScreen {
 			title.setText("Sua vez de jogar!");
 		} else {
 			title.setText("Aguarde seu adversário!");
+			
+			System.out.println("Aguardando adversário...");
 
 			// Inicia Thread para validação se é minha vez, criar uma Thread
 			// nesse momento impede que a aplicação
@@ -339,7 +343,7 @@ public class GameScreen {
 							buildBoard(GameBroadcast.getInstance().getGameManager().validateGameBoard());
 						}
 					} catch (Exception e) {
-						e.printStackTrace();
+						JOptionPane.showMessageDialog(null, e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
 					}
 				}
 				alreadyPlayThread.interrupt();

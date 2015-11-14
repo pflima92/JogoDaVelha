@@ -49,7 +49,10 @@ public class Server {
 	 * comando, quando receber ele pega, executa e depois devolve a resposta.
 	 *
 	 */
-	public void listen() {
+	public void listen() throws IOException{
+		
+		// Cria o ServerSocket na porta se estiver disponível
+		serverSocket = new ServerSocket(port);
 
 		serverThread = new Thread(() -> {
 
@@ -60,9 +63,6 @@ public class Server {
 			PrintStream printStream = null;
 
 			try {
-
-				// Cria o ServerSocket na porta se estiver disponível
-				serverSocket = new ServerSocket(port);
 
 				while (true) {
 
@@ -100,7 +100,6 @@ public class Server {
 			} finally {
 				stop();
 			}
-
 		});
 		serverThread.start();
 	}
